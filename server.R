@@ -1,3 +1,7 @@
+# Server Code for Sequence Alignment Visualization
+# Date: June 2016
+# Author: Jenny Nguyen
+# Email: jnnguyen2@wisc.edu
 
 library(plyr)
 library(stringr)
