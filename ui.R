@@ -22,8 +22,10 @@ dashboardPage(
       solidHeader = TRUE, status = "primary", collapsible = TRUE,
       textInput("x", "Sequence 1:", value = "apple"),
       textInput("y", "Sequence 2:", value = "orange"),
+      selectInput("alignment", "What kind of alignment?", c("local", "global")),
       numericInput("match", "Match Score:", 1),
-      numericInput("mismatch", "Mismatch Score:", 0),
+      numericInput("mismatch", "Mismatch Score:", -1),
+      numericInput("space", "Space Score:", -2),
       numericInput("gap", "Gap Score:", 0)
     ),
 

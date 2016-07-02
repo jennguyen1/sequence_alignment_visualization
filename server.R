@@ -10,6 +10,8 @@ library(cowplot)
 library(jn.general)
 library(data.table)
 library(shiny)
+source('~/Desktop/sequence_alignment_visualization/generate_matrix.R')
+
 
 shinyServer(function(input, output) {
 
@@ -71,8 +73,9 @@ shinyServer(function(input, output) {
   drawPlot <- function(plot_data, params){
 
     # plot data
-    g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, fill = value)) +
+    g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, label = text, fill = value)) +
       geom_tile(color = "black", size = 1.1) +
+      geom_text() +
 
       # format the axes
       scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
@@ -109,8 +112,8 @@ shinyServer(function(input, output) {
     split_data <- to_be(data, dplyr::filter, x_coordinates == click_x, y_coordinates == click_y)
 
     # color data and return results
-    split_data$to_be <- mutate(split_data$to_be, value = 1)
-    split_data$not_to_be <- mutate(split_data$not_to_be, value = 2)
+    split_data$to_be <- mutate(split_data$to_be, value = 0)
+    split_data$not_to_be <- mutate(split_data$not_to_be, value = 1)
     combined_results <- rbindlist(list(split_data$to_be, split_data$not_to_be))
 
     return(combined_results)
@@ -153,8 +156,12 @@ shinyServer(function(input, output) {
     data <- expand.grid(x_coordinates = coord_x, y_coordinates = coord_y)
     data <- mutate(data, x_word = mapvalues(x_coordinates, coord_x, split_x), y_word = mapvalues(y_coordinates, coord_y, split_y))
 
-    # values for each box - change later
-    data <- mutate(data, value = sample(1:nrow(data), nrow(data)))
+    # make matrix: x = col indices; y = row indices
+    values <- make_matrices(split_y, split_x, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
+    values <- as.vector(matrix(t(values), ncol = 1))
+
+    # values for each box
+    data <- mutate(data, text = values, value = 0)
 
     # output structures
     list(data = data,
