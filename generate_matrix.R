@@ -83,11 +83,6 @@ compute_ix <- function(matrices, row, col, s, space, gap){
   m <- matrices[["m"]][row - 1, col] + gap + space
   ix <- matrices[["ix"]][row - 1, col] + space
 
-  # all Ix(i, 0) values are initialized to 0
-  # if(col == 1){
-  #   ix = 0
-  # }
-
   return( list(m = m, ix = ix) )
 
 }
@@ -113,7 +108,8 @@ compute_iy <- function(matrices, row, col, s, space, gap){
 }
 
 
-
+#' Converts values less than -1000 to -INF
+convert <- function(x) ifelse(x < -1000, "-INF", x)
 
 #' Generate the 3 DP matrices (M, Ix, Iy)
 #'
@@ -140,6 +136,7 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
     # initialize matrices with infinitely small number
     mat <- matrix(-10000, ncol = ncol, nrow = nrow)
     matrices <- list(m = mat, ix = mat, iy = mat)
+    formatted <- matrix("", ncol = ncol, nrow = nrow)
 
   }
 
@@ -150,10 +147,10 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
       # compute s, the match/mismatch score
       s <- compute_s(str1, str2, i, j, match, mismatch)
 
-      # whether or not to use affine gap
+      # algorithm: no affine gap
       if(gap == 0){
 
-        # different initialization and fill for local vs global alignment
+        # different initialization and fill for global vs local alignment
         if(!use_local){
 
           if(i == 1 & j != 1) matrices[i, j] <- matrices[i, j - 1] + space
@@ -167,14 +164,10 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
 
         }
 
+      # algorithm: affine gap
       } else{
 
-        # initialize the matrices (edges)
-        if(i == 1) matrices[["iy"]][i, j] <- gap + space * j
-        if(j == 1) matrices[["ix"]][i, j] <- 0
-        if(i == 1 & j == 1) matrices[["m"]][i, j] <- 0
-
-        # for all other locations compute the score of each cell using global alignment DP for the affine gap penalty
+        # compute values for each matrix cell (same for global vs local)
         if(i != 1 & j != 1){
 
           # compute value for m
@@ -185,11 +178,31 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
 
           # compute value for iy
           matrices[["iy"]][i, j] = max( compute_iy(matrices, i, j, s, space, gap) %>% unlist )
-        }
-      }
 
+        # different initialization and fill for global vs local alignment
+        } else{
+
+          if(!use_local){
+
+            if(i == 1) matrices[["iy"]][i, j] <- gap + space * (j - 1)
+            if(j == 1) matrices[["ix"]][i, j] <- gap + space * (i - 1)
+            if(i == 1 & j == 1) matrices[["m"]][i, j] <- 0
+
+          } else{
+
+            matrices[["m"]][i, j] <- 0
+
+          }
+        }
+
+        formatted[i, j] <- with(matrices, paste("m:", convert(m[i, j]), "\nix:", convert(ix[i, j]), "\niy:", convert(iy[i, j])))
+
+      }
     }
   }
+
+  # replace with formatted text of 3 matrices
+  if(gap != 0) matrices <- formatted
 
   # return the matrices
   return(matrices)
