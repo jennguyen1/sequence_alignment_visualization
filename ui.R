@@ -26,7 +26,8 @@ dashboardPage(
       numericInput("match", "Match Score:", 1),
       numericInput("mismatch", "Mismatch Score:", -1),
       numericInput("space", "Space Score:", -2),
-      numericInput("gap", "Gap Score:", 0)
+      numericInput("gap", "Gap Score:", 0),
+      actionButton("submit", "Submit")
     ),
 
     box(

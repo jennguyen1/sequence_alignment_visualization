@@ -3,6 +3,11 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
+#TODO
+# highroad v lowroad
+# traceback for gaps and cleanup
+# double click submit to reset?
+
 library(plyr)
 library(stringr)
 library(ggplot2)
@@ -81,7 +86,7 @@ shinyServer(function(input, output) {
       geom_text()
 
     # color the cells
-    g <- g + scale_fill_gradient(low = "#A6C1FF", high = "#004DFF")
+    g <- g + scale_fill_gradient(low = "#D2F2FF", high = "dodgerblue")
 
     # format the axes
     g <- g + scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
@@ -106,6 +111,9 @@ shinyServer(function(input, output) {
   # process click to obtain strings & highlight plots
   run_traceback <- function(data, params, click){
 
+    return_original <- FALSE
+
+    # fix for no click data
     if(is.null(click)){
       return( list(data = data, strings = NULL) )
     }
@@ -129,6 +137,11 @@ shinyServer(function(input, output) {
                                   params$match, params$mismatch, params$space, params$gap, params$use_local
                                   )
 
+    # fix for clicking on a box that doesn't lead anywhere
+    if( length(highlight_values$coordinates) == 0 ){
+      return( list(data = data, strings = NULL) )
+    }
+
     # generate command to color the pathway
     cmd <- lapply(highlight_values$coordinates, function(v) paste0("(x_coordinates == ", v[1] - 0.5, " & ", "y_coordinates == ", v[2] - 0.5, ")")) %>%
       unlist %>%
@@ -142,20 +155,24 @@ shinyServer(function(input, output) {
     split_data$not_to_be <- mutate(split_data$not_to_be, value = 0)
     combined_results <- rbindlist(list(split_data$to_be, split_data$not_to_be))
 
+    # return results
     return( list(data = combined_results, strings = highlight_values$strings) )
+
   }
 
   # effects of click on plot (highlights) disappears seconds after event
   # ensure that the effect of click on graph is permanent by using a global click variable
   click_value <- NULL
   change_click <- function(previous, in_click){
-    if( is.null(in_click) & is.null(previous) ){
+
+    if( (is.null(in_click) & is.null(previous)) ){
       click_value <<- NULL
     } else if( is.null(in_click) & !is.null(previous) ){
       click_value <<- previous
     } else{
       click_value <<- in_click
     }
+
   }
 
 
@@ -164,7 +181,9 @@ shinyServer(function(input, output) {
   ################
 
   # structure to hold the variables
-  params <- reactive({
+  params <- eventReactive(input$submit, {
+
+    click_value <<- NULL
 
     # vector of characters
     split_x <- split_word( paste0("-", input$x) )

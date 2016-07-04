@@ -114,8 +114,7 @@ back_step <- function(matrices, current_matrix, current_score, current_row, curr
 traceback <- function(matrices, str1, str2, current_matrix, current_row, current_col, match, mismatch, space, gap, use_local){
 
   # initialize list of coordinates to track
-  coordinates <- list()
-  # coordinates <- list( c(current_row, current_col) )
+  coordinates <- list( c(current_row, current_col) )
 
   if(use_local){
     # initialize the strings
@@ -137,9 +136,6 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
   # to start the current matrix, row, column correspond to the best score in the last row
   # continues through the loop until we reach a stopping point of the DP matrix
   while(!(current_row == 1 & current_col == 1)){
-
-    # add to list of coordinates
-    coordinates[[length(coordinates) + 1]] <- c(current_row, current_col)
 
     # obtains the score corresponding to current matrix, row, col
     current_score <- ifelse(gap == 0, matrices[current_row, current_col], matrices[[current_matrix]][current_row, current_col])
@@ -175,6 +171,9 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
       str_y <- str_y[1:(length(str_y)-1)]
       break
     }
+
+    # add to list of coordinates
+    coordinates[[length(coordinates) + 1]] <- c(current_row, current_col)
 
   }
 
