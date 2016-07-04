@@ -10,7 +10,9 @@ library(cowplot)
 library(jn.general)
 library(data.table)
 library(shiny)
+source('~/Desktop/sequence_alignment_visualization/score_computation.R')
 source('~/Desktop/sequence_alignment_visualization/generate_matrix.R')
+source('~/Desktop/sequence_alignment_visualization/traceback.R')
 
 
 shinyServer(function(input, output) {
@@ -58,7 +60,8 @@ shinyServer(function(input, output) {
     }
 
     # return results
-    return(click_coordinate)
+    click_coordinate <- laply(click_coordinate, function(a) a + 0.5)
+    return( click_coordinate )
   }
 
 
@@ -70,15 +73,18 @@ shinyServer(function(input, output) {
   # Plot Output Editing #
   #######################
   # function to draw the plot
-  drawPlot <- function(plot_data, params){
+  drawPlot <- function(plot_data, params, click_value){
 
     # plot data
     g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, label = text, fill = value)) +
       geom_tile(color = "black", size = 1.1) +
-      geom_text() +
+      geom_text()
 
-      # format the axes
-      scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
+    # color the cells
+    g <- g + scale_fill_gradient(low = "#A6C1FF", high = "#004DFF")
+
+    # format the axes
+    g <- g + scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
       scale_x_continuous(breaks = params$coord_x, labels = params$split_x) +
       theme_bw() +
       theme(
@@ -97,26 +103,46 @@ shinyServer(function(input, output) {
     return(g)
   }
 
-  # plot to highlight results based on click coordinates TODO: edit after algorithm
-  highlight_plot <- function(data, params, click){
+  # process click to obtain strings & highlight plots
+  run_traceback <- function(data, params, click){
 
     if(is.null(click)){
-      return(data)
+      return( list(data = data, strings = NULL) )
     }
 
     # find the coordinates of x and y
     click_x <- click_to_coordinates(click$x, params$len_x, is_y = FALSE)
     click_y <- click_to_coordinates(click$y, params$len_y, is_y = TRUE, params$coord_y)
 
-    # find the data to color TODO
-    split_data <- to_be(data, dplyr::filter, x_coordinates == click_x, y_coordinates == click_y)
+    # find the current matrix for affine gap values
+    if(params$gap != 0){
+      current_matrix <- llply(1:3, function(i) params$matrices[[i]][click_x, click_y])
+      names(current_matrix) <- names(params$matrices)
+      current_matrix <- names(which.max(current_matrix))
+    } else{
+      current_matrix <- NULL
+    }
+
+    # run the traceback and highlight the values
+    highlight_values <- traceback(params$matrices, params$split_x, params$split_y,
+                                  current_matrix, click_x, click_y,
+                                  params$match, params$mismatch, params$space, params$gap, params$use_local
+                                  )
+
+    # generate command to color the pathway
+    cmd <- lapply(highlight_values$coordinates, function(v) paste0("(x_coordinates == ", v[1] - 0.5, " & ", "y_coordinates == ", v[2] - 0.5, ")")) %>%
+      unlist %>%
+      paste(collapse = " | ")
+
+    # find the data to color
+    split_data <- to_be(data, dplyr::filter_, cmd)
 
     # color data and return results
-    split_data$to_be <- mutate(split_data$to_be, value = 0)
-    split_data$not_to_be <- mutate(split_data$not_to_be, value = 1)
+    split_data$to_be <- mutate(split_data$to_be, value = 1)
+    split_data$not_to_be <- mutate(split_data$not_to_be, value = 0)
     combined_results <- rbindlist(list(split_data$to_be, split_data$not_to_be))
 
-    return(combined_results)
+    return( list(data = combined_results, strings = highlight_values$strings) )
   }
 
   # effects of click on plot (highlights) disappears seconds after event
@@ -137,7 +163,7 @@ shinyServer(function(input, output) {
   # Data Storage #
   ################
 
-  # structure to hold the variables TODO: edit add the algorithm here
+  # structure to hold the variables
   params <- reactive({
 
     # vector of characters
@@ -156,20 +182,35 @@ shinyServer(function(input, output) {
     data <- expand.grid(x_coordinates = coord_x, y_coordinates = coord_y)
     data <- mutate(data, x_word = mapvalues(x_coordinates, coord_x, split_x), y_word = mapvalues(y_coordinates, coord_y, split_y))
 
-    # make matrix: x = col indices; y = row indices
-    values <- make_matrices(split_y, split_x, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
-    values <- as.vector(matrix(t(values), ncol = 1))
+    # make matrix: x = row indices; y = col indices
+    matrices <- make_matrices(split_x, split_y, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
+    values <- as.vector(matrix((matrices), ncol = 1))
 
     # values for each box
-    data <- mutate(data, text = values, value = 0)
+    data <- mutate(data, text = values, value = values)
 
     # output structures
-    list(data = data,
+    list(data = data, matrices = matrices,
          coord_x = coord_x, split_x = split_x, len_x = len_x,
-         coord_y = coord_y, split_y = split_y, len_y = len_y
+         coord_y = coord_y, split_y = split_y, len_y = len_y,
+         match = input$match, mismatch = input$mismatch,
+         space = input$space, gap = input$gap, use_local = input$alignment == "local"
     )
   })
 
+  # structure to hold plot highlights and alignment results
+  clicks <- reactive({
+
+    # change the click value
+    change_click(click_value, input$plotClick)
+
+    # run traceback and get highlight plot data and aligned strings
+    click_results <- run_traceback(params()$data, params(), click_value)
+
+    # return results
+    return(click_results)
+
+  })
 
   ####################
   # Generate Outputs #
@@ -177,9 +218,12 @@ shinyServer(function(input, output) {
 
   # generate plot output
   output$myPlot <- renderPlot({
-    change_click(click_value, input$plotClick)
-    data <- highlight_plot(params()$data, params(), click_value)
-    drawPlot(data, params())
+    data <- clicks()$data
+    drawPlot(data, params(), click_value)
   })
+
+  # generate aligned strings text
+  output$alignedText1 <- renderText(clicks()$strings[[1]])
+  output$alignedText2 <- renderText(clicks()$strings[[2]])
 
 })

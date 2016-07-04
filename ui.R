@@ -20,8 +20,8 @@ dashboardPage(
     box(
       title = "Choose Input Parameters",
       solidHeader = TRUE, status = "primary", collapsible = TRUE,
-      textInput("x", "Sequence 1:", value = "apple"),
-      textInput("y", "Sequence 2:", value = "orange"),
+      textInput("x", "Sequence 1:", value = "ttagagt"),
+      textInput("y", "Sequence 2:", value = "atagggtta"),
       selectInput("alignment", "What kind of alignment?", c("local", "global")),
       numericInput("match", "Match Score:", 1),
       numericInput("mismatch", "Mismatch Score:", -1),
@@ -30,7 +30,8 @@ dashboardPage(
     ),
 
     box(
-      plotOutput("myPlot", click = "plotClick")
+      plotOutput("myPlot", click = "plotClick"),
+      textOutput("alignedText1"), textOutput("alignedText2")
     )
   )
 
