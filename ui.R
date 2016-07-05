@@ -6,34 +6,51 @@
 library(shiny)
 library(shinydashboard)
 
-dashboardPage(
+dashboardPage(skin = "green", 
 
-  # App Title
+  # app title
   dashboardHeader(title = "Sequence Alignment"),
 
-  # Sidebar Inputs
+  # disable sidebar
   dashboardSidebar(disable = TRUE),
 
-  # Outputs
-  dashboardBody(
-
+  # UI body
+  dashboardBody( verticalLayout(
+    
+    # inputs box
     box(
-      title = "Choose Input Parameters",
-      solidHeader = TRUE, status = "primary", collapsible = TRUE,
-      textInput("x", "Sequence 1:", value = "ttagagt"),
-      textInput("y", "Sequence 2:", value = "atagggtta"),
-      selectInput("alignment", "What kind of alignment?", c("local", "global")),
-      numericInput("match", "Match Score:", 1),
-      numericInput("mismatch", "Mismatch Score:", -1),
-      numericInput("space", "Space Score:", -2),
-      numericInput("gap", "Gap Score:", 0),
+      title = "Choose Input Parameters", width = NULL, 
+      solidHeader = TRUE, status = "success", collapsible = TRUE,
+      
+      fluidRow(
+        column(width = 6, textInput("x", "Sequence 1:", value = "ttagagt")),
+        column(width = 6, textInput("y", "Sequence 2:", value = "atagggtta"))
+      ), 
+      fluidRow(
+        column(width = 12, selectInput("alignment", "What kind of alignment?", c("local", "global")))
+      ), 
+      fluidRow(
+        column(width = 6, numericInput("match", "Match Score:", 1)),
+        column(width = 6, numericInput("mismatch", "Mismatch Score:", -1))
+      ),
+      fluidRow(
+        column(width = 6, numericInput("space", "Space Score:", -2)),
+               column(width = 6, numericInput("gap", "Gap Score:", 0))
+      ),
       actionButton("submit", "Submit")
-    ),
-
+    ), 
+  
     box(
+      title = "Alignment Results", width = NULL,
+      solidHeader = TRUE, status = "success",
+      
       plotOutput("myPlot", click = "plotClick"),
-      textOutput("alignedText1"), textOutput("alignedText2")
+      
+      h3(textOutput("alignResults")),
+      h4(textOutput("alignedText1"), align = "center"), 
+      h4(textOutput("alignedBars"), align = "center"), 
+      h4(textOutput("alignedText2"), align = "center")
     )
-  )
-
+    
+  ))
 )

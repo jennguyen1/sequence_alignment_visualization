@@ -15,9 +15,9 @@ library(cowplot)
 library(jn.general)
 library(data.table)
 library(shiny)
-source('~/Desktop/sequence_alignment_visualization/score_computation.R')
-source('~/Desktop/sequence_alignment_visualization/generate_matrix.R')
-source('~/Desktop/sequence_alignment_visualization/traceback.R')
+source('score_computation.R')
+source('generate_matrix.R')
+source('traceback.R')
 
 
 shinyServer(function(input, output) {
@@ -86,7 +86,7 @@ shinyServer(function(input, output) {
       geom_text()
 
     # color the cells
-    g <- g + scale_fill_gradient(low = "#D2F2FF", high = "dodgerblue")
+    g <- g + scale_fill_gradient(low = "#F0FFF0", high = "#0AC92B")
 
     # format the axes
     g <- g + scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
@@ -242,7 +242,9 @@ shinyServer(function(input, output) {
   })
 
   # generate aligned strings text
+  output$alignResults <- renderText("Alignment Results:")
   output$alignedText1 <- renderText(clicks()$strings[[1]])
   output$alignedText2 <- renderText(clicks()$strings[[2]])
+  output$alignedBars <- renderText(clicks()$strings[[3]])
 
 })
