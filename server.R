@@ -6,7 +6,6 @@
 #TODO
 # highroad v lowroad
 # traceback for gaps and cleanup
-# double click submit to reset?
 
 library(plyr)
 library(stringr)
