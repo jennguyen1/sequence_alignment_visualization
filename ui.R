@@ -44,7 +44,7 @@ dashboardPage(skin = "green",
       title = "Alignment Results", width = NULL,
       solidHeader = TRUE, status = "success",
       
-      plotOutput("myPlot", click = "plotClick"),
+      plotOutput("myPlot", click = "plotClick", height = "700px"),
       
       h3(textOutput("alignResults")),
       h4(textOutput("alignedText1"), align = "center"), 

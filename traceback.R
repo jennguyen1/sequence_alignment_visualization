@@ -136,7 +136,7 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
   # to start the current matrix, row, column correspond to the best score in the last row
   # continues through the loop until we reach a stopping point of the DP matrix
   while(!(current_row == 1 & current_col == 1)){
-
+    
     # obtains the score corresponding to current matrix, row, col
     current_score <- ifelse(gap == 0, matrices[current_row, current_col], matrices[[current_matrix]][current_row, current_col])
 
@@ -167,8 +167,8 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
     # local alignment - break out
     } else{
       coordinates[[length(coordinates)]] <- NULL
-      str_x <- str_x[1:(length(str_x)-1)]
-      str_y <- str_y[1:(length(str_y)-1)]
+      str_x <- ifelse(length(str_x) > 1, str_x[1:(length(str_x)-1)], "")
+      str_y <- ifelse(length(str_y) > 1, str_y[1:(length(str_y)-1)], "")
       break
     }
 
@@ -197,7 +197,8 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
   }
 
   # return aligned strings and coordinates to highlight
-  strings <- list(x = paste(str_x, collapse = ""), y = paste(str_y, collapse = ""), bars = paste(Map(function(x, y) ifelse(x != y, ".", "|"), str_x, str_y), collapse = " "))
+  bars <- ifelse(nchar(str_x) != 0, Map(function(x, y) ifelse(x != y, ".", "|"), str_x, str_y), "")
+  strings <- list(x = paste(str_x, collapse = ""), y = paste(str_y, collapse = ""), bars = paste(bars, collapse = " "))
   return( list(strings = strings, coordinates = coordinates) )
 }
 

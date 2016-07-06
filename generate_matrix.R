@@ -97,10 +97,10 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
   }
 
   # replace with formatted text of 3 matrices
-  if(gap != 0) matrices <- formatted
+  if(gap != 0) formatted <- formatted else formatted <- matrices
 
   # return the matrices
-  return(matrices)
+  return( list(matrices = matrices, formatted_matrices = formatted) )
 
 }
 

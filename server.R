@@ -80,8 +80,16 @@ shinyServer(function(input, output) {
   drawPlot <- function(plot_data, params, click_value){
 
     # plot data
-    g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, label = text, fill = value)) +
-      geom_tile(color = "black", size = 1.1) +
+    if( is.numeric(plot_data$value) ){
+      g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, label = text, fill = value)) +
+        geom_tile(color = "black", size = 1.1)
+    } else{
+      g <- ggplot(data = plot_data, aes(x_coordinates, y_coordinates, label = text)) +
+        geom_tile(fill = "#F0FFF0", color = "black", size = 1.1)
+    }
+    
+    # plot data
+    g <- g +
       geom_text()
 
     # color the cells
@@ -108,7 +116,7 @@ shinyServer(function(input, output) {
   }
 
   # process click to obtain strings & highlight plots
-  run_traceback <- function(data, params, click){
+  process_click <- function(data, params, click){
 
     return_original <- FALSE
 
@@ -201,8 +209,10 @@ shinyServer(function(input, output) {
     data <- mutate(data, x_word = mapvalues(x_coordinates, coord_x, split_x), y_word = mapvalues(y_coordinates, coord_y, split_y))
 
     # make matrix: x = row indices; y = col indices
-    matrices <- make_matrices(split_x, split_y, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
-    values <- as.vector(matrix((matrices), ncol = 1))
+    DP_matrix <- make_matrices(split_x, split_y, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
+    matrices <- DP_matrix$matrices
+    formatted_matrices <- DP_matrix$formatted_matrices
+    values <- as.vector(matrix((formatted_matrices), ncol = 1))
 
     # values for each box
     data <- mutate(data, text = values, value = values)
@@ -223,7 +233,7 @@ shinyServer(function(input, output) {
     change_click(click_value, input$plotClick)
 
     # run traceback and get highlight plot data and aligned strings
-    click_results <- run_traceback(params()$data, params(), click_value)
+    click_results <- process_click(params()$data, params(), click_value)
 
     # return results
     return(click_results)
