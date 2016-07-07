@@ -34,8 +34,8 @@ compute_s <- function(str1, str2, str1_i, str2_i, match, mismatch){
 compute_cell <- function(matrices, row, col, s, space, use_local){
 
   values <- list(
-    up = matrices[row - 1, col] + space,
     diag = matrices[row - 1, col - 1] + s,
+    up = matrices[row - 1, col] + space,
     left = matrices[row, col - 1] + space
   )
   if(use_local) values$local <- 0
