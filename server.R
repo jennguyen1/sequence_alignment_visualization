@@ -3,11 +3,14 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
-#TODO
+# TODO
 # highroad v lowroad
-# traceback for gaps and cleanup
+# cleanup
+# global alignment auto? no
+# local align abc, aac; bottom corner trace matches - traceback
 
 library(plyr)
+library(dplyr)
 library(stringr)
 library(ggplot2)
 library(cowplot)
@@ -41,12 +44,12 @@ shinyServer(function(input, output) {
     }
 
     # fix: boundary limits because ggdraw doesn't start and end at 0/1
-    if(!is_y){
-      low = 0.12
-      high = 0.95
-    } else{
+    if(is_y){
       low = 0.05
-      high = 0.85
+      high = 0.90
+    } else{
+      low = 0.10
+      high = 0.95
     }
 
     # set boundary limits
@@ -90,13 +93,12 @@ shinyServer(function(input, output) {
     
     # plot data
     g <- g +
-      geom_text()
-
-    # color the cells
-    g <- g + scale_fill_gradient(low = "#F0FFF0", high = "#0AC92B")
+      geom_text() + 
+      scale_fill_gradient(low = "#F0FFF0", high = "#0AC92B")
 
     # format the axes
-    g <- g + scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
+    g <- g + 
+      scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
       scale_x_continuous(breaks = params$coord_x, labels = params$split_x) +
       theme_bw() +
       theme(
@@ -122,6 +124,11 @@ shinyServer(function(input, output) {
 
     # fix for no click data
     if(is.null(click)){
+      return( list(data = data, strings = NULL) )
+    }
+    
+    # fix for clicking outside of the boundaries
+    if( !between(click$x, 0.10, 0.95) | !between(click$y, 0.05, 0.90) ){
       return( list(data = data, strings = NULL) )
     }
 
@@ -251,7 +258,7 @@ shinyServer(function(input, output) {
   })
 
   # generate aligned strings text
-  output$alignResults <- renderText("Alignment Results:")
+  output$alignResults <- renderText(ifelse( nchar(clicks()$strings[[1]]) > 0, "Alignment Results:", "") )
   output$alignedText1 <- renderText(clicks()$strings[[1]])
   output$alignedText2 <- renderText(clicks()$strings[[2]])
   output$alignedBars <- renderText(clicks()$strings[[3]])
