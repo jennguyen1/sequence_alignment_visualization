@@ -4,37 +4,6 @@
 # Email: jnnguyen2@wisc.edu
 
 
-#' Finds the best alignment following generation of DP matrices
-#'
-#' Parameters: matrices (dictionary of 3 DP matrices)
-#'
-#' Returns: name of the matrix (str), row and column (int) that corresponds to the best score
-#'
-# best_align <- function(matrices){
-#   # find the last row - in which we will look for the best alignment
-#   row = len(matrices['m']) - 1
-#
-#   # obtain the last rows of each matrix and store values in a dict
-#   last_rows = { k: v[row] for k,v in matrices.items() }
-#
-#   # obtain the maximum value of each row and store the values in a dict
-#   max_per_matrix = { k: max(v) for k,v in last_rows.items() }
-#
-#   # compute the best score from the max of each row of each matrix
-#   best_score = max( max_per_matrix.values() )
-#
-#   # find the original matrix containing the best score - finds the key that best score corresponds to in max_per_matrix
-#   best_matrix = [ k for k,v in max_per_matrix.items() if v == best_score ].pop()
-#
-#   # obtains the column of the best score by finding best score in the last rows
-#   col = last_rows[best_matrix].index(best_score)
-#
-#   # returns the name of the best matrix, the row and column of the best alignment score
-#   return best_matrix, row, col
-# }
-#
-
-
 #' Traceback 1 step based on score of current position
 #'
 #' Parameters:
@@ -100,7 +69,7 @@ back_step <- function(matrices, current_matrix, current_score, current_row, curr
 }
 
 
-#' Traceback through all 3 matrices
+#' Traceback through entire matrices
 #'
 #' Parameters:
 #' - matrices: dictionary of 3 DP matrices
@@ -186,6 +155,12 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
     # reverse string order
     str_x <- rev(str_x)
     str_y <- rev(str_y)
+    
+    # remove extra dash at beginning if there is one
+    if( str_x[1] == "-" & str_y[1] == "-" ){
+      str_x <- str_x[2:length(str_x)]
+      str_y <- str_y[2:length(str_y)]
+    }
 
   } else{
     # reverse string order - remove the "-" at beginning of string and NA at end

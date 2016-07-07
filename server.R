@@ -7,7 +7,6 @@
 # highroad v lowroad
 # cleanup
 # global alignment auto? no
-# local align abc, aac; bottom corner trace matches - traceback
 
 library(plyr)
 library(dplyr)
