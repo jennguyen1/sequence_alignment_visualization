@@ -76,7 +76,7 @@ compute_m <- function(matrices, row, col, s, space, gap, use_local){
 #'
 #' Returns: dictionary w/ 3 possible score values
 #'
-compute_ix <- function(matrices, row, col, s, space, gap){
+compute_ix <- function(matrices, row, col, s, space, gap, use_local){
 
   # compute values, named by the matrix the score is derived
   m <- matrices[["m"]][row - 1, col] + gap + space
@@ -95,7 +95,7 @@ compute_ix <- function(matrices, row, col, s, space, gap){
 #'
 #' Returns: dictionary w/ 3 possible score values
 #'
-compute_iy <- function(matrices, row, col, s, space, gap){
+compute_iy <- function(matrices, row, col, s, space, gap, use_local){
 
   # compute values, named by matrix the score is derived
   m <- matrices[["m"]][row, col - 1] + gap + space

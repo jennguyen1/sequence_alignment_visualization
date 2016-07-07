@@ -164,11 +164,16 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
       str_x <- c(str_x, "-")
       str_y <- c(str_y, str2[current_col])
 
-    # local alignment - break out
+    # local alignment - remove last addition and break out 
     } else{
       coordinates[[length(coordinates)]] <- NULL
-      str_x <- ifelse(length(str_x) > 1, str_x[1:(length(str_x)-1)], "")
-      str_y <- ifelse(length(str_y) > 1, str_y[1:(length(str_y)-1)], "")
+      if( length(str_x) > 1 ){
+        str_x <- str_x[1:(length(str_x)-1)]
+        str_y <- str_y[1:(length(str_y)-1)]
+      } else{
+        str_x <- ""
+        str_y <- ""
+      }
       break
     }
 
