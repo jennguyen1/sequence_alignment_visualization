@@ -30,16 +30,17 @@ dashboardPage(skin = "green",
         column(width = 12, selectInput("alignment", "What kind of alignment?", c("local", "global")))
       ), 
       fluidRow(
-        column(width = 6, numericInput("match", "Match Score:", 1)),
-        column(width = 6, numericInput("mismatch", "Mismatch Score:", -1))
+        column(width = 6, numericInput("match", "Match Score:", 1, min = 0)),
+        column(width = 6, numericInput("mismatch", "Mismatch Score:", -1, max = 0))
       ),
       fluidRow(
-        column(width = 6, numericInput("space", "Space Score:", -2)),
-               column(width = 6, numericInput("gap", "Gap Score:", 0))
+        column(width = 6, numericInput("space", "Space Score:", -2, max = 0)),
+               column(width = 6, numericInput("gap", "Gap Score:", 0, max = 0))
       ),
       actionButton("submit", "Submit")
     ), 
   
+    # outputs
     box(
       title = "Alignment Results", width = NULL,
       solidHeader = TRUE, status = "success",

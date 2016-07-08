@@ -3,8 +3,8 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
-# TODO
-# cleanup
+# fix for 3 matrices string alignment, matrix in local 0 value
+# limits on UI
 
 library(plyr)
 library(dplyr)
@@ -54,9 +54,11 @@ shinyServer(function(input, output) {
 
     # convert click value to coordinate
     for(i in 1:(length(boundaries) - 1)){
+      
       if( between(click, boundaries[i], boundaries[i + 1]) ){
         click_coordinate <- i - 0.5
       }
+      
     }
 
     if(is_y){
@@ -77,7 +79,7 @@ shinyServer(function(input, output) {
   # Plot Output Editing #
   #######################
   # function to draw the plot
-  drawPlot <- function(plot_data, params, click_value){
+  drawPlot <- function(plot_data, params){
 
     # plot data
     if( is.numeric(plot_data$value) ){
@@ -108,7 +110,7 @@ shinyServer(function(input, output) {
       ) +
       labs(x = "", y = "")
 
-    # move x-axis to the top
+    # move x-axis to the top - note: this changes the coordinate system to [0,1] for both x/y axes
     g <- ggdraw(switch_axis_position(g, axis = "x"))
 
     return(g)
@@ -117,14 +119,12 @@ shinyServer(function(input, output) {
   # process click to obtain strings & highlight plots
   process_click <- function(data, params, click){
 
-    return_original <- FALSE
-
     # fix for no click data
     if(is.null(click)){
       return( list(data = data, strings = NULL) )
     }
     
-    # fix for clicking outside of the boundaries
+    # fix for clicking outside of the boundaries - resets graph
     if( !between(click$x, 0.10, 0.95) | !between(click$y, 0.05, 0.90) ){
       return( list(data = data, strings = NULL) )
     }
@@ -135,11 +135,15 @@ shinyServer(function(input, output) {
 
     # find the current matrix for affine gap values
     if(params$gap != 0){
-      current_matrix <- llply(1:3, function(i) params$matrices[[i]][click_x, click_y])
+      
+      current_matrix <- llply(1:3, function(i) params$matrices[[i]][click_y, click_x])
       names(current_matrix) <- names(params$matrices)
       current_matrix <- names(which.max(current_matrix))
+      
     } else{
+      
       current_matrix <- NULL
+      
     }
 
     # run the traceback and highlight the values
@@ -257,7 +261,7 @@ shinyServer(function(input, output) {
   # generate plot output
   output$myPlot <- renderPlot({
     data <- clicks()$data
-    drawPlot(data, params(), click_value)
+    drawPlot(data, params())
   })
 
   # generate aligned strings text
