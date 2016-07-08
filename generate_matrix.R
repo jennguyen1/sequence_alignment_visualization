@@ -14,11 +14,11 @@ convert <- function(x) ifelse(x < -1000, "-INF", x)
 #'
 #' Returns: a list containing the 3 matrices (M, Ix, Iy)
 #'
-make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
+make_matrices <- function(str_c, str_r, match, mismatch, space, gap, use_local){
 
   # pre-compute the dimensions for the 3 matrices
-  nrow <- length(str1)
-  ncol <- length(str2)
+  ncol <- length(str_c)
+  nrow <- length(str_r)
 
   # initialize the matrix
   if(gap == 0){
@@ -40,7 +40,7 @@ make_matrices <- function(str1, str2, match, mismatch, space, gap, use_local){
     for(j in 1:ncol){
 
       # compute s, the match/mismatch score
-      s <- compute_s(str1, str2, i, j, match, mismatch)
+      s <- compute_s(str_r, str_c, i, j, match, mismatch)
 
       # algorithm: no affine gap
       if(gap == 0){

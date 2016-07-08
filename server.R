@@ -4,9 +4,7 @@
 # Email: jnnguyen2@wisc.edu
 
 # TODO
-# highroad v lowroad
 # cleanup
-# global alignment auto? no
 
 library(plyr)
 library(dplyr)
@@ -145,10 +143,11 @@ shinyServer(function(input, output) {
     }
 
     # run the traceback and highlight the values
-    highlight_values <- traceback(params$matrices, params$split_x, params$split_y,
-                                  current_matrix, click_x, click_y,
-                                  params$match, params$mismatch, params$space, params$gap, params$use_local
-                                  )
+    highlight_values <- traceback(
+      matrices = params$matrices, str_c = params$split_x, str_r = params$split_y,
+      current_matrix = current_matrix, current_row = click_y, current_col = click_x,
+      match = params$match, mismatch = params$mismatch, space = params$space, gap = params$gap, use_local = params$use_local
+    )
 
     # fix for clicking on a box that doesn't lead anywhere
     if( length(highlight_values$coordinates) == 0 ){
@@ -156,7 +155,7 @@ shinyServer(function(input, output) {
     }
 
     # generate command to color the pathway
-    cmd <- lapply(highlight_values$coordinates, function(v) paste0("(x_coordinates == ", v[1] - 0.5, " & ", "y_coordinates == ", v[2] - 0.5, ")")) %>%
+    cmd <- lapply(highlight_values$coordinates, function(v) paste0("(y_coordinates == ", v[1] - 0.5, " & ", "x_coordinates == ", v[2] - 0.5, ")")) %>%
       unlist %>%
       paste(collapse = " | ")
 
@@ -215,10 +214,15 @@ shinyServer(function(input, output) {
     data <- mutate(data, x_word = mapvalues(x_coordinates, coord_x, split_x), y_word = mapvalues(y_coordinates, coord_y, split_y))
 
     # make matrix: x = row indices; y = col indices
-    DP_matrix <- make_matrices(split_x, split_y, match = input$match, mismatch = input$mismatch, space = input$space, gap = input$gap, use_local = input$alignment == "local")
+    DP_matrix <- make_matrices(
+      str_c = split_x, str_r = split_y, 
+      match = input$match, mismatch = input$mismatch, 
+      space = input$space, gap = input$gap, 
+      use_local = input$alignment == "local"
+    )
     matrices <- DP_matrix$matrices
     formatted_matrices <- DP_matrix$formatted_matrices
-    values <- as.vector(matrix((formatted_matrices), ncol = 1))
+    values <- as.vector(matrix(t(formatted_matrices), ncol = 1))
 
     # values for each box
     data <- mutate(data, text = values, value = values)

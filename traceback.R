@@ -73,32 +73,28 @@ back_step <- function(matrices, current_matrix, current_score, current_row, curr
 #'
 #' Parameters:
 #' - matrices: dictionary of 3 DP matrices
-#' - str1, str2: (str) strings to compare
+#' - str_c, str_r: (str) strings to compare
 #' - current_matrix, current_row, current_column: (str, 2 int) current position
 #' - match, mismatch, gap, space: (int) scores
 #' - use_local: whether to use local or global alignment
 #'
 #' Returns: (str) strings with alignment and gaps
 #'
-traceback <- function(matrices, str1, str2, current_matrix, current_row, current_col, match, mismatch, space, gap, use_local){
+traceback <- function(matrices, str_c, str_r, current_matrix, current_row, current_col, match, mismatch, space, gap, use_local){
 
   # initialize list of coordinates to track
   coordinates <- list( c(current_row, current_col) )
 
   if(use_local){
     # initialize the strings
-    str_x <- str1[current_row]
-    str_y <- str2[current_col]
+    str_x <- c()
+    str_y <- c()
 
   } else{
     # intialize the strings, saves the portions of the string that come after the best alignment
     # reverses the string so we can easily add to it (will un-reverse later)
-    str_x <- rev( str1[(current_row+1):(length(str1)+1)] )
-    str_y <- rev( str2[(current_col+1):(length(str2)+1)] )
-
-    # add the character that corresponds to the best alignment
-    str_x <- c(str_x, str1[current_row])
-    str_y <- c(str_y, str2[current_col])
+    str_x <- rev( str_c[(current_col+1):(length(str_c)+1)] )
+    str_y <- rev( str_r[(current_row+1):(length(str_r)+1)] )
 
   }
 
@@ -110,43 +106,36 @@ traceback <- function(matrices, str1, str2, current_matrix, current_row, current
     current_score <- ifelse(gap == 0, matrices[current_row, current_col], matrices[[current_matrix]][current_row, current_col])
 
     # compute mismatch function
-    s <- compute_s(str1, str2, current_row, current_col, match, mismatch)
+    s <- compute_s(str_c, str_r, current_col, current_row, match, mismatch)
 
     # find the next matrix, row, column in traceback
     current_status <- back_step(matrices, current_matrix, current_score, current_row, current_col, s, space, gap, use_local)
     current_matrix <- current_status$next_matrix
-    current_row <- current_status$next_row
-    current_col <- current_status$next_col
 
-    # best alignment is x (in str1) aligned to a gap (in str2)
+    # best alignment is x (in str_c) aligned to a gap (in str_r)
     if(current_matrix == "ix" | current_matrix == "up"){
-      str_x <- c(str_x, str1[current_row])
-      str_y <- c(str_y, "-")
-
-    # best alignment is x (in str1) aligned to y (in str2)
-    } else if(current_matrix == "m" | current_matrix == "diag"){
-      str_x <- c(str_x, str1[current_row])
-      str_y <- c(str_y, str2[current_col])
-
-    # best alignment is a gap (in str1) aligned to y (in str2)
-    } else if(current_matrix == "iy" | current_matrix == "left"){
       str_x <- c(str_x, "-")
-      str_y <- c(str_y, str2[current_col])
+      str_y <- c(str_y, str_r[current_row])
+
+    # best alignment is x (in str_c) aligned to y (in str_r)
+    } else if(current_matrix == "m" | current_matrix == "diag"){
+      str_x <- c(str_x, str_c[current_col])
+      str_y <- c(str_y, str_r[current_row])
+
+    # best alignment is a gap (in str_c) aligned to y (in str_r)
+    } else if(current_matrix == "iy" | current_matrix == "left"){
+      str_x <- c(str_x, str_c[current_col])
+      str_y <- c(str_y, "-")
 
     # local alignment - remove last addition and break out 
     } else{
       coordinates[[length(coordinates)]] <- NULL
-      if( length(str_x) > 1 ){
-        str_x <- str_x[1:(length(str_x)-1)]
-        str_y <- str_y[1:(length(str_y)-1)]
-      } else{
-        str_x <- ""
-        str_y <- ""
-      }
       break
     }
-
-    # add to list of coordinates
+    
+    # assign next row and column and add list of coordinates
+    current_row <- current_status$next_row
+    current_col <- current_status$next_col
     coordinates[[length(coordinates) + 1]] <- c(current_row, current_col)
 
   }
