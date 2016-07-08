@@ -217,7 +217,7 @@ shinyServer(function(input, output) {
   params <- eventReactive(input$submit, {
 
     # process gap value
-    gap <- ifelse( is.null(input$gap), 0, input$gap )
+    gap <- ifelse( input$gap_penalty == "linear", 0, input$gap )
       
     # reset click_value
     click_value <<- NULL
