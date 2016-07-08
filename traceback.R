@@ -138,42 +138,44 @@ traceback <- function(matrices, str_c, str_r, current_matrix, current_row, curre
   }
   
   coordinates <- out$coordinates
-  str_x <- out$str_x
-  str_y <- out$str_y
+  
+  # reverse string order
+  str_x <- rev(out$str_x)
+  str_y <- rev(out$str_y)
 
   # process the string to original format
-  if(use_local){
+  if(length(coordinates) > 0){
     
-    # fix for landing in upper corner which is 0
-    if( all(coordinates[[length(coordinates)]] == 1) ) {
-      coordinates[[length(coordinates)]] <- NULL
-    }
-    
-    # reverse string order
-    str_x <- rev(str_x)
-    str_y <- rev(str_y)
-    
-    # remove extra dash at beginning if there is one
-    if( str_x[1] == "-" & str_y[1] == "-" ){
-      str_x <- str_x[2:length(str_x)]
-      str_y <- str_y[2:length(str_y)]
-    }
-    
-  } else{
-    
-    # reverse string order - remove the NA at end
-    str_x <- rev(str_x)[1:(length(str_x)-1)]
-    str_y <- rev(str_y)[1:(length(str_y)-1)]
-    
-    # fix for if two string lengths are not equal
-    if(length(str_x) < length(str_y)){
-      str_x <- c(str_x, rep("-", length(str_y) - length(str_x)))
-    } else if(length(str_y) < length(str_x)){
-      str_y <- c(str_y, rep("-", length(str_x) - length(str_y)))
+    if(use_local){
+      
+      # fix for landing in upper corner which is 0
+      if( all(coordinates[[length(coordinates)]] == 1) ) {
+        coordinates[[length(coordinates)]] <- NULL
+      }
+      
+      # remove extra dash at beginning if there is one
+      if( str_x[1] == "-" & str_y[1] == "-" ){
+        str_x <- str_x[2:length(str_x)]
+        str_y <- str_y[2:length(str_y)]
+      }
+      
+    } else{
+      
+      # reverse string order - remove the NA at end
+      str_x <- str_x[1:(length(str_x)-1)]
+      str_y <- str_y[1:(length(str_y)-1)]
+      
+      # fix for if two string lengths are not equal
+      if(length(str_x) < length(str_y)){
+        str_x <- c(str_x, rep("-", length(str_y) - length(str_x)))
+      } else if(length(str_y) < length(str_x)){
+        str_y <- c(str_y, rep("-", length(str_x) - length(str_y)))
+      }
+      
     }
     
   }
-  
+
   # return aligned strings and coordinates to highlight
   bars <- ifelse(nchar(str_x) != 0, Map(function(x, y) ifelse(x != y, ".", "|"), str_x, str_y), "")
   strings <- list(x = paste(str_x, collapse = ""), y = paste(str_y, collapse = ""), bars = paste(bars, collapse = " "))
@@ -268,6 +270,17 @@ traceback_affine <- function(coordinates, str_x, str_y, matrices, str_c, str_r, 
       # local alignment
       'local' = {
         coordinates[[length(coordinates)]] <- NULL
+        # coordinates[[length(coordinates)]] <- NULL
+        str_x <- str_x[1:(length(str_x)-1)]
+        str_y <- str_y[1:(length(str_y)-1)]
+        
+        if( length(coordinates) == 1 & str_x[1] != str_y[1] ){
+          coordinates <- list()
+          str_x <- ""
+          str_y <- ""
+        } else{
+          coordinates[[length(coordinates)]] <- NULL
+        }
         break
       }
     )
