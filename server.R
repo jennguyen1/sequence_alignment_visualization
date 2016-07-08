@@ -3,9 +3,6 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
-# fix for 3 matrices string alignment, matrix in local 0 value
-# limits on UI
-
 library(plyr)
 library(dplyr)
 library(stringr)
@@ -21,6 +18,18 @@ source('traceback.R')
 
 shinyServer(function(input, output) {
 
+  output$space_option <- renderUI({
+    switch(input$gap_penalty,
+           "linear" = numericInput("space", "Gap Score:", -2, max = 0),
+           "affine" = numericInput("space", "Space Score:", -2, max = 0)
+    )
+  })
+  
+  output$gap_option <- renderUI({
+    if(input$gap_penalty == "affine") numericInput("gap", "Gap Score:", -4, max = 0)
+  })
+  
+  
   ###################
   # Initialize Data #
   ###################
@@ -118,21 +127,29 @@ shinyServer(function(input, output) {
 
   # process click to obtain strings & highlight plots
   process_click <- function(data, params, click){
+    
+    return_nothing <- list(data = data, strigns = NULL)
 
     # fix for no click data
     if(is.null(click)){
-      return( list(data = data, strings = NULL) )
+      return( return_nothing )
     }
     
     # fix for clicking outside of the boundaries - resets graph
     if( !between(click$x, 0.10, 0.95) | !between(click$y, 0.05, 0.90) ){
-      return( list(data = data, strings = NULL) )
+      return( return_nothing )
     }
 
     # find the coordinates of x and y
     click_x <- click_to_coordinates(click$x, params$len_x, is_y = FALSE)
     click_y <- click_to_coordinates(click$y, params$len_y, is_y = TRUE, params$coord_y)
 
+    # fix for clicking on the initial position (1, 1)
+    if(click_x == 1 & click_y == 1){
+      return( return_nothing )
+    }
+    
+    
     # find the current matrix for affine gap values
     if(params$gap != 0){
       
@@ -155,7 +172,7 @@ shinyServer(function(input, output) {
 
     # fix for clicking on a box that doesn't lead anywhere
     if( length(highlight_values$coordinates) == 0 ){
-      return( list(data = data, strings = NULL) )
+      return( return_nothing )
     }
 
     # generate command to color the pathway
@@ -199,6 +216,10 @@ shinyServer(function(input, output) {
   # structure to hold the variables
   params <- eventReactive(input$submit, {
 
+    # process gap value
+    gap <- ifelse( is.null(input$gap), 0, input$gap )
+      
+    # reset click_value
     click_value <<- NULL
 
     # vector of characters
@@ -221,7 +242,7 @@ shinyServer(function(input, output) {
     DP_matrix <- make_matrices(
       str_c = split_x, str_r = split_y, 
       match = input$match, mismatch = input$mismatch, 
-      space = input$space, gap = input$gap, 
+      space = input$space, gap = gap, 
       use_local = input$alignment == "local"
     )
     matrices <- DP_matrix$matrices
@@ -236,7 +257,7 @@ shinyServer(function(input, output) {
          coord_x = coord_x, split_x = split_x, len_x = len_x,
          coord_y = coord_y, split_y = split_y, len_y = len_y,
          match = input$match, mismatch = input$mismatch,
-         space = input$space, gap = input$gap, use_local = input$alignment == "local"
+         space = input$space, gap = gap, use_local = input$alignment == "local"
     )
   })
 

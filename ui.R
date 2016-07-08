@@ -27,15 +27,16 @@ dashboardPage(skin = "green",
         column(width = 6, textInput("y", "Sequence 2:", value = "atagggtta"))
       ), 
       fluidRow(
-        column(width = 12, selectInput("alignment", "What kind of alignment?", c("local", "global")))
+        column(width = 6, radioButtons("alignment", "What kind of alignment?", c("local", "global"))),
+        column(width = 6, radioButtons("gap_penalty", "What kind of gap penalty?", c("linear", "affine")))
       ), 
       fluidRow(
         column(width = 6, numericInput("match", "Match Score:", 1, min = 0)),
         column(width = 6, numericInput("mismatch", "Mismatch Score:", -1, max = 0))
       ),
       fluidRow(
-        column(width = 6, numericInput("space", "Space Score:", -2, max = 0)),
-               column(width = 6, numericInput("gap", "Gap Score:", 0, max = 0))
+        column(width = 6, uiOutput("space_option")), 
+        column(width = 6, uiOutput("gap_option"))
       ),
       actionButton("submit", "Submit")
     ), 
