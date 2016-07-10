@@ -2,6 +2,8 @@ name: sequence_alignment_visualization
 account: jennynguyen
 server: shinyapps.io
 appId: 113280
-bundleId: 500183
+bundleId: 500826
 url: https://jennynguyen.shinyapps.io/sequence_alignment_visualization/
-when: 1468014041.41965
+when: 1468117091.02034
+asMultiple: FALSE
+asStatic: FALSE

@@ -178,7 +178,7 @@ traceback <- function(matrices, str_c, str_r, current_matrix, current_row, curre
 
   # return aligned strings and coordinates to highlight
   bars <- ifelse(nchar(str_x) != 0, Map(function(x, y) ifelse(x != y, ".", "|"), str_x, str_y), "")
-  strings <- list(x = paste(str_x, collapse = ""), y = paste(str_y, collapse = ""), bars = paste(bars, collapse = " "))
+  strings <- list(x = paste(str_x, collapse = ""), y = paste(str_y, collapse = ""), bars = paste(bars, collapse = ""))
   return( list(strings = strings, coordinates = coordinates) )
   
 }
