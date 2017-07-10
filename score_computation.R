@@ -3,7 +3,7 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
-#' Compute the score of an alignment
+#' Compute the score of an alignment for linear gap scoring
 #'
 #' Parameters:
 #' - str1, str2: (vector) the two strings to compare
@@ -22,7 +22,7 @@ compute_s <- function(str1, str2, str1_i, str2_i, match, mismatch){
 
 }
 
-#' Compute the score of an alignment
+#' Compute the score of an alignment for affine gap scoring
 #'
 #' Parameters:
 #' - matrices: (matrix) dictionary of matrices that contain the M, Ix, Iy matrices
