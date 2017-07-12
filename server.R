@@ -3,6 +3,7 @@
 # Author: Jenny Nguyen
 # Email: jnnguyen2@wisc.edu
 
+# load libraries
 library(plyr)
 library(dplyr)
 library(stringr)
@@ -11,6 +12,7 @@ library(cowplot)
 library(jn.general)
 library(data.table)
 library(shiny)
+# load dependencies
 source('score_computation.R')
 source('generate_matrix.R')
 source('traceback.R')
@@ -18,6 +20,7 @@ source('traceback.R')
 
 shinyServer(function(input, output) {
 
+  # change input options available depending on inputs
   output$space_option <- renderUI({
     switch(input$gap_penalty,
            "linear" = numericInput("space", "Gap Score:", -2, max = 0),
