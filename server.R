@@ -8,7 +8,6 @@ library(plyr)
 library(dplyr)
 library(stringr)
 library(ggplot2)
-library(cowplot)
 library(jn.general)
 library(data.table)
 library(shiny)
@@ -22,53 +21,11 @@ source('traceback.R')
 # FUNCTIONS FOR INITIATING DATA ------------------
 
 # function to split a string into vector of characters
-split_word <- function(word) laply(1:nchar(word), function(i) str_sub(word, i, i))
+split_word <- function(word) str_split(word, boundary("character"))[[1]]
 
 
-# functions to convert each character position to a coordinate
+# functions to convert each character position to a coordinate (making plot axis)
 word_to_coordinates <- function(split_word) 0:(length(split_word) - 1) + 0.5
-
-# function to convert a click into a coordinate
-click_to_coordinates <- function(click, word_length, is_y = FALSE, original_coordinates){
-
-  # error for y data
-  if(is_y & missing(original_coordinates)){
-    stop("Need to supply original coordinates if mapping the y click")
-  }
-
-  # fix: boundary limits because ggdraw doesn't start and end at 0/1
-  if(is_y){
-    low = 0.05
-    high = 0.90
-  } else{
-    low = 0.10
-    high = 0.95
-  }
-
-  # set boundary limits
-  boundaries <- seq(low, high, length.out = word_length + 1)
-
-  # convert click value to coordinate
-  for(i in 1:(length(boundaries) - 1)){
-
-    if( between(click, boundaries[i], boundaries[i + 1]) ){
-      click_coordinate <- i - 0.5
-    }
-
-  }
-
-  if(is_y){
-    click_coordinate <- mapvalues(click_coordinate, original_coordinates, rev(original_coordinates))
-  }
-
-  # return results
-  click_coordinate <- laply(click_coordinate, function(a) a + 0.5)
-  return( click_coordinate )
-}
-
-
-# make a grid of all pairwise combos of letters
-make_data <- function(x, y) expand.grid(x = split_word(x), y = split_word(y))
 
 
 #-------------------------------------------------
@@ -94,20 +51,16 @@ drawPlot <- function(plot_data, params){
   # format the axes
   g <- g +
     scale_y_reverse(breaks = params$coord_y, labels = params$split_y) +
-    scale_x_continuous(breaks = params$coord_x, labels = params$split_x) +
+    scale_x_continuous(breaks = params$coord_x, labels = params$split_x, position = "top") +
     theme_bw() +
     theme(
       legend.position = "none",
       panel.grid = element_blank(),
       panel.border = element_blank(),
-      axis.text.x = element_text(size = 20, face = "bold"),
-      axis.text.y = element_text(size = 20, face = "bold"),
+      axis.text = element_text(size = 20, face = "bold"),
       axis.ticks = element_line(color = "white")
     ) +
     labs(x = "", y = "")
-
-  # move x-axis to the top - note: this changes the coordinate system to [0,1] for both x/y axes
-  g <- ggdraw(switch_axis_position(g, axis = "x"))
 
   return(g)
 }
@@ -115,7 +68,7 @@ drawPlot <- function(plot_data, params){
 # process click to obtain strings & highlight plots
 process_click <- function(data, params, click){
 
-  return_nothing <- list(data = data, strigns = NULL)
+  return_nothing <- list(data = data, strings = NULL)
 
   # fix for no click data
   if(is.null(click)){
@@ -123,13 +76,13 @@ process_click <- function(data, params, click){
   }
 
   # fix for clicking outside of the boundaries - resets graph
-  if( !between(click$x, 0.10, 0.95) | !between(click$y, 0.05, 0.90) ){
+  if( !between(click$x, 0, params$len_x) | !between(click$y, 0, params$len_y) ){
     return( return_nothing )
   }
 
   # find the coordinates of x and y
-  click_x <- click_to_coordinates(click$x, params$len_x, is_y = FALSE)
-  click_y <- click_to_coordinates(click$y, params$len_y, is_y = TRUE, params$coord_y)
+  click_x <- ceiling(click$x)
+  click_y <- ceiling(click$y)
 
   # fix for clicking on the initial position (1, 1)
   if(click_x == 1 & click_y == 1){
@@ -138,15 +91,12 @@ process_click <- function(data, params, click){
 
 
   # find the current matrix for affine gap values
+  current_matrix <- NULL
   if(params$gap != 0){
 
-    current_matrix <- llply(1:3, function(i) params$matrices[[i]][click_y, click_x])
+    current_matrix <- lapply(1:3, function(i) params$matrices[[i]][click_y, click_x])
     names(current_matrix) <- names(params$matrices)
     current_matrix <- names(which.max(current_matrix))
-
-  } else{
-
-    current_matrix <- NULL
 
   }
 
@@ -173,7 +123,7 @@ process_click <- function(data, params, click){
   # color data and return results
   split_data$to_be <- mutate(split_data$to_be, value = 1)
   split_data$not_to_be <- mutate(split_data$not_to_be, value = 0)
-  combined_results <- rbindlist(list(split_data$to_be, split_data$not_to_be))
+  combined_results <- bind_rows(split_data$to_be, split_data$not_to_be)
 
   # return results
   return( list(data = combined_results, strings = highlight_values$strings) )
@@ -206,9 +156,6 @@ shinyServer(function(input, output) {
 
     # process gap value
     gap <- ifelse( input$gap_penalty == "linear", 0, input$gap )
-
-    # reset click_value
-    click_value <<- NULL
 
     # vector of characters
     split_x <- split_word( paste0("-", input$x) )
@@ -249,29 +196,17 @@ shinyServer(function(input, output) {
     )
   })
 
-  # effects of click on plot (highlights) disappears seconds after event
-  # ensure that the effect of click on graph is permanent by using a global click variable
-  click_value <- NULL
-  change_click <- function(previous, in_click){
-
-    if( (is.null(in_click) & is.null(previous)) ){
-      click_value <<- NULL
-    } else if( is.null(in_click) & !is.null(previous) ){
-      click_value <<- previous
-    } else{
-      click_value <<- in_click
-    }
-
-  }
+  # hold the value of the click
+  click_value <- reactiveValues(click = NULL)
+  observeEvent(input$plotClick, {
+    click_value$click <- input$plotClick
+  })
 
   # structure to hold plot highlights and alignment results
   clicks <- reactive({
 
-    # change the click value
-    change_click(click_value, input$plotClick)
-
     # run traceback and get highlight plot data and aligned strings
-    click_results <- process_click(params()$data, params(), click_value)
+    click_results <- process_click(params()$data, params(), click_value$click)
 
     # return results
     return(click_results)
