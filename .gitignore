@@ -1,4 +1,4 @@
-/.Rhistory
-/.Rproj.user
-/sequence_alignment_visualization.Rproj
-/rsconnect
+.Rhistory
+.Rproj.user
+*.Rproj
+/rsconnect/
