@@ -32,7 +32,7 @@ dashboardPage(skin = "green",
           p("The ", span(strong("match score")),  " is added if two elements match. The ", span(strong("mismatch score")), " is the penalty if two elements do not match."),
           p("The ", span(strong("alignment")), " may be local (Smith Waterman algorithm) or global (Needleman-Wunsch algorithm). Global alignment finds the best match between entire sequences. Local alignment finds the best match between substrings of the two sequences."),
           p("The ", span(strong("gap penalty")), " is the penalty for introducing gaps into a sequence. Affine gap penalties have a gap score, the penalty for opening a gap, and a space score, the penalty for extending a gap. Linear gap penalties treat each gap the same."),
-          p("Activate the algorithm by clicking on the Submit button. The dynamic programming matrix will appear in the plot below. Click on any cell in the plot to find the corresponding best alignment. Click anywhere in the margins of the plot to reset the plot.")
+          p("Activate the algorithm by clicking on the Submit button. The dynamic programming matrix will appear in the plot below. Click on any cell in the plot to find the corresponding best alignment, plot will reset if there is no best alignment from that cell. Click anywhere in the margins of the plot to reset the plot.")
         ),
 
         # user inputs panel
