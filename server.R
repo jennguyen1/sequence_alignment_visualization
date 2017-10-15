@@ -13,9 +13,9 @@ library(data.table)
 library(shiny)
 
 # load dependencies
-source('score_computation.R')
-source('generate_matrix.R')
-source('traceback.R')
+source('scripts/score_computation.R')
+source('scripts/generate_matrix.R')
+source('scripts/traceback.R')
 
 #-------------------------------------------------
 # FUNCTIONS FOR INITIATING DATA ------------------
