@@ -15,7 +15,8 @@ Activate the algorithm by clicking on the Submit button. The dynamic programming
 
 ![screenshot of display 2](images/app_screenshot2.jpg)
 
-Click on any cell in the plot to find the corresponding best alignment, plot will reset if there is no best alignment from that cell. Click anywhere in the margins of the plot to reset the plot.
+Click on any cell in the plot to find the corresponding best alignment, plot will reset if there is no best alignment from that cell. 
 
 ![screenshot of display 3](images/app_screenshot3.jpg)
 
+Click anywhere in the margins of the plot to reset the plot.
