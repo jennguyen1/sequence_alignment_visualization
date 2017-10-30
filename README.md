@@ -6,7 +6,7 @@
 
 ## Quick Summary
 
-This R Shiny application visualizes the Smith-Waterman/Needleman-Wunsch sequence alignment algorithm. These algorithms are used to align two sequences. It is commonly used to match DNA sequences. This is the R implementation of a [project I did for Bioinformatics 576](https://github.com/jennguyen1/bioinformatics_576/tree/master/gene_alignment) (originally in Python). A detailed description of the algorithm is available in instructions tab of the app.
+This R Shiny application visualizes the Smith-Waterman/Needleman-Wunsch sequence alignment algorithm. These algorithms are used to align two sequences. It is commonly used to match DNA sequences. This is the R implementation of a [project I did for Bioinformatics 576](https://github.com/jennguyen1/bioinformatics_576/tree/master/gene_alignment) (originally in Python). A detailed description of the algorithm is available in information tab of the app.
 
 ![screenshot of display 1](images/app_screenshot1.jpg)
 

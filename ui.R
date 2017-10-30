@@ -11,13 +11,13 @@ sidebar <-   dashboardSidebar(
   collapsed = TRUE,
   sidebarMenu(
     menuItem("Sequence Alignment", tabName = "main_app"),
-    menuItem("Instructions", tabName = "instructions", icon = icon("info-circle")),
+    menuItem("Information", tabName = "information", icon = icon("info-circle")),
     menuItem("Github Source Code", href = "https://github.com/jennguyen1/sequence_alignment_visualization", icon = icon("github"))
   )
 )
 
-instructions <- tabItem(
-  tabName = "instructions",
+information <- tabItem(
+  tabName = "information",
   verticalLayout(
     box(width = NULL,
         p("This is an interactive shiny visualization of the Smith-Waterman/Needleman-Wunsch sequence alignment algorithm. These algorithms are used to align two sequences. It is commonly used to match DNA sequences."),
@@ -75,7 +75,7 @@ main_app <- tabItem(
 
 body <- dashboardBody(
   tabItems(
-    instructions, 
+    information, 
     main_app
   ),
   span(p("Copyright (c) 2018 Jennifer N Nguyen under the MIT License"), style = "font-size:12px; color:grey")
