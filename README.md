@@ -2,7 +2,7 @@
 
 ## Check it Out!
 
-[Run the app](https://jennifernguyen.shinyapps.io/sequence_alignment_visualization/)
+<https://jennifernguyen.shinyapps.io/sequence_alignment_visualization/>
 
 ## Quick Summary
 
